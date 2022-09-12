@@ -16,7 +16,7 @@ This section explains how the optimization problem is transcribed into code. The
  └─── actionModel at time N
 ```
 
-### Cost Models
+### Cost Model
 
 The class that represents the cost function is initialized as
 
@@ -64,3 +64,42 @@ stateActivation = crocoddyl.ActivationModelWeightedQuad(stateWeights**2)
 
 with `stateWeights` being an array of all one. 
 
+### Contact Model
+
+The contact model defines which part of the robot contacts with the environment through the contact Jacobian $\mathbf{J}_c$ and the contact constraint $\mathbf{J}_c\ddot{\mathbf{q}} + \dot{\mathbf{J}}_c\dot{\mathbf{q}} = 0$. Similar to the cost model case, the contact model is first initialized using
+
+```python
+contactModel = crocoddyl.ContactModelMultiple(multiBodyState, controlDimension)
+```
+
+then each `individualContactModel` is added to the `contactModel` object, in the case of point contacts the `individualContactModel` is defined as
+
+```python
+individualContactModel = crocoddyl.ContactModel3D(multiBodyState, contactFrameID, contactPositionBaumgarteStabilization, controlDimension, baumgarteStabilizationGains)
+```
+
+where the `contactPositionBaumgarteStabilization` term seems to be always set to `np.array([0.0, 0.0, 0.0])`. Then, each `individualContactModel` is added using 
+
+```python
+contactModel.addContact(contactName, individualContactModel)
+```
+
+with `contactName` being a string indentifying the contact.
+
+### Actuation Model
+
+The actuation model defines which joints are actuated. In the case of a quadruped, the base (body of the quadruped) is a floating-base joint (unactuated) in the URDF file. Thus, a `ActuationModelFloatingBase` is used,
+
+```python
+actuationModel = crocoddyl.ActuationModelFloatingBase(multiBodyState)
+```
+
+### State Model
+
+The state model is defined using the `pinocchio` model
+
+```python
+stateModel = crocoddyl.StateMultibody(pinocchioModel)
+```
+
+which defines the kinematics and dynamics of the robot.
