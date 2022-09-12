@@ -117,3 +117,5 @@ this defines the continous time model which uses the dynamics $\dot{\mathbf{x}} 
 ```python
 discreteActionModel = crocoddyl.IntegratedActionModelEuler(continuousActionModel, timeStep)
 ```
+
+which uses the dynamics $\mathbf{x}^\prime = \mathbf{F}^d(\mathbf{x}) + \mathbf{G}^d(\mathbf{x})\mathbf{u}$.
