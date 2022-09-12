@@ -38,10 +38,7 @@ standing = {
 solver = crocoddyl.SolverBoxDDP(
     gait.createStandingProblem(
         x0,
-        standing["stepLength"],
-        standing["stepHeight"],
         standing["timeStep"],
-        standing["stepKnots"],
         standing["supportKnots"],
     )
 )

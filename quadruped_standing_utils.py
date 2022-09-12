@@ -1,3 +1,5 @@
+from pdb import set_trace
+
 import crocoddyl
 import numpy as np
 import pinocchio
@@ -25,16 +27,11 @@ class QuadrupedalStandingProblem:
         self.mu = 0.7
         self.Rsurf = np.eye(3)
 
-    def createStandingProblem(
-        self, x0, stepLength, stepHeight, timeStep, stepKnots, supportKnots
-    ):
+    def createStandingProblem(self, x0, timeStep, supportKnots):
         """Create a shooting problem for standing.
 
         :param x0: initial state
-        :param stepLength: step length
-        :param stepHeight: step height
         :param timeStep: step time for each knot
-        :param stepKnots: number of knots for step phases
         :param supportKnots: number of knots for double support phases
         :return shooting problem
         """
@@ -78,6 +75,7 @@ class QuadrupedalStandingProblem:
         # foot
         nu = self.actuation.nu
         contactModel = crocoddyl.ContactModelMultiple(self.state, nu)
+
         for i in supportFootIds:
             supportContactModel = crocoddyl.ContactModel3D(
                 self.state, i, np.array([0.0, 0.0, 0.0]), nu, np.array([0.0, 50.0])
@@ -85,6 +83,8 @@ class QuadrupedalStandingProblem:
             contactModel.addContact(
                 self.rmodel.frames[i].name + "_contact", supportContactModel
             )
+
+        set_trace()
 
         # Creating the cost model for a contact phase
         costModel = crocoddyl.CostModelSum(self.state, nu)
