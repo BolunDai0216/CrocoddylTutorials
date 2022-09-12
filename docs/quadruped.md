@@ -103,3 +103,17 @@ stateModel = crocoddyl.StateMultibody(pinocchioModel)
 ```
 
 which defines the kinematics and dynamics of the robot.
+
+## Action Model
+
+The `actionModel` is then defined using 
+
+```python
+continuousActionModel = crocoddyl.DifferentialActionModelContactFwdDynamics(stateModel, actuationModel, contactModel, costModel, JMinvJt_damping, enable_force)
+```
+
+this defines the continous time model which uses the dynamics $\dot{\mathbf{x}} = \mathbf{F}(\mathbf{x}) + \mathbf{G}(\mathbf{x})\mathbf{u}$. It is them numerically integrated
+
+```python
+discreteActionModel = crocoddyl.IntegratedActionModelEuler(continuousActionModel, timeStep)
+```
