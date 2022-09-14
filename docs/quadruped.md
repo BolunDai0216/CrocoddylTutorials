@@ -231,3 +231,36 @@ The overall structure of the swing leg phase problem is the same as the standing
 
 ![Walking Motion Plan](imgs/walkingmotion.png)
 
+The cost function to track the CoM trajectory is 
+
+$$\mathrm{CoMCost} = \frac{1}{2}\|\mathrm{plannedCoMPosition} - \mathrm{actualCoMPosition}\|^2$$
+
+which is implemented as
+
+```python
+comResidual = crocoddyl.ResidualModelCoMPosition(multiBodyState, plannedCoMPosition, controlDimension)
+comTrack = crocoddyl.CostModelResidual(multiBodyState, comResidual)
+```
+the `actualCoMPosition` comes from `multiBodyState`. The cost function to track the swing foot motion is
+
+$$\mathrm{swingFootCost} = \frac{1}{2}\|\mathrm{plannedSwingFootPosition} - \mathrm{actualSwingFootPosition}\|^2$$
+
+which is implemented as
+
+```python
+frameTranslationResidual = crocoddyl.ResidualModelFrameTranslation(multiBodyState, swingFootFrameId, plannedSwingFootPosition, controlDimension)
+footTrack = crocoddyl.CostModelResidual(multiBodyState, frameTranslationResidual)
+```
+
+In addition to these two costs, the swing foot problem also has the friction cone penalty function, the state cost, the control cost and the state bound penalty function. The last four cost functions has the same formulation as the standing problem.
+
+### Impact
+
+The impulse dynamics has the form of
+
+$$\begin{align*}
+\mathbf{M}\mathbf{v}^+ &= \mathbf{M}\mathbf{v}^- + \mathbf{J}_c^T\boldsymbol{\Lambda}\\
+\mathbf{J}_c\mathbf{v}^+ &= e\mathbf{J}_c\mathbf{v}^-
+\end{align*}$$
+
+with $\boldsymbol{\Lambda}$ representing the impulse and $e\in[0, 1]$ representing the type of the impact (1 for perfect elastic impact and 0 for perfect inelastic impact).
