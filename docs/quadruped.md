@@ -207,17 +207,16 @@ $$\mathrm{frictionConeLowerBound} \leq \mathrm{A}\boldsymbol{\lambda} \leq \math
 The friction cone penalty function is then implemented as
 
 ```python
-cone = crocoddyl.FrictionCone(surfaceOrientationMatrix, surfaceFrictionCoefficient, facetNumber, useInnerApproximation, minNormalForce, maxNormalForce)
-
-coneResidual = crocoddyl.ResidualModelContactFrictionCone(
-    multiBodyState, contactFrameId, cone, controlDimension
+cone = crocoddyl.FrictionCone(
+    surfaceOrientationMatrix, 
+    surfaceFrictionCoefficient, 
+    facetNumber, 
+    useInnerApproximation, 
+    minNormalForce, 
+    maxNormalForce
 )
 
-coneActivation = crocoddyl.ActivationModelQuadraticBarrier(
-    crocoddyl.ActivationBounds(cone.lb, cone.ub)
-)
-
-frictionCone = crocoddyl.CostModelResidual(
-    multiBodyState, coneActivation, coneResidual
-)
+coneResidual = crocoddyl.ResidualModelContactFrictionCone(multiBodyState, contactFrameId, cone, controlDimension)
+coneActivation = crocoddyl.ActivationModelQuadraticBarrier(crocoddyl.ActivationBounds(cone.lb, cone.ub))
+frictionCone = crocoddyl.CostModelResidual(multiBodyState, coneActivation, coneResidual)
 ```
