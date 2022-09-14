@@ -1,3 +1,5 @@
+from pdb import set_trace
+
 import crocoddyl
 import example_robot_data
 import numpy as np
@@ -13,7 +15,7 @@ def main():
     # Defining the initial state of the robot
     q0 = anymal.model.referenceConfigurations["standing"].copy()
     v0 = pinocchio.utils.zero(anymal.model.nv)
-    x0 = np.concatenate([q0, v0])
+    x0 = np.concatenate([q0, v0 + np.random.random(18) * 5])
 
     # Setting up the 3d walking problem
     lfFoot, rfFoot, lhFoot, rhFoot = "LF_FOOT", "RF_FOOT", "LH_FOOT", "RH_FOOT"

@@ -84,8 +84,6 @@ class QuadrupedalStandingProblem:
                 self.rmodel.frames[i].name + "_contact", supportContactModel
             )
 
-        set_trace()
-
         # Creating the cost model for a contact phase
         costModel = crocoddyl.CostModelSum(self.state, nu)
 

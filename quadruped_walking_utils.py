@@ -1,3 +1,5 @@
+from pdb import set_trace
+
 import crocoddyl
 import numpy as np
 import pinocchio
@@ -193,6 +195,8 @@ class QuadrupedalWalkingProblem:
                     swingFootTask=swingFootTask,
                 )
             ]
+
+        # set_trace()
 
         # Action model for the foot switch
         footSwitchModel = self.createFootSwitchModel(supportFootIds, swingFootTask)
