@@ -229,5 +229,5 @@ The walking problem consists of three parts: double support, swing leg phase, an
 
 The overall structure of the swing leg phase problem is the same as the standing problem, with two additional objectives: tracking the swing foot motion and center of mass (CoM) motion. The planned motions are:
 
-![Walking Motion Plan](imgs/walkingmotion.png | width=300)
+![Walking Motion Plan](imgs/walkingmotion.png)
 
