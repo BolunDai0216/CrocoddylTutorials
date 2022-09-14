@@ -176,7 +176,7 @@ class QuadrupedalWalkingProblem:
                         [
                             stepLength * (k + 1) / numKnots,
                             0.0,
-                            stepHeight * (1 - float(k - phKnots) / phKnots),
+                            stepHeight * (1 - float(k + 1 - phKnots) / phKnots),
                         ]
                     )
                 tref = p + dp
@@ -195,8 +195,6 @@ class QuadrupedalWalkingProblem:
                     swingFootTask=swingFootTask,
                 )
             ]
-
-        # set_trace()
 
         # Action model for the foot switch
         footSwitchModel = self.createFootSwitchModel(supportFootIds, swingFootTask)
