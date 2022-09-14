@@ -201,6 +201,7 @@ class QuadrupedalWalkingProblem:
         comPos0 += [stepLength * comPercentage, 0.0, 0.0]
         for p in feetPos0:
             p += [stepLength, 0.0, 0.0]
+
         return footSwingModel + [footSwitchModel]
 
     def createSwingFootModel(
@@ -232,6 +233,7 @@ class QuadrupedalWalkingProblem:
             comResidual = crocoddyl.ResidualModelCoMPosition(self.state, comTask, nu)
             comTrack = crocoddyl.CostModelResidual(self.state, comResidual)
             costModel.addCost("comTrack", comTrack, 1e6)
+
         for i in supportFootIds:
             cone = crocoddyl.FrictionCone(self.Rsurf, self.mu, 4, False)
             coneResidual = crocoddyl.ResidualModelContactFrictionCone(
@@ -246,6 +248,7 @@ class QuadrupedalWalkingProblem:
             costModel.addCost(
                 self.rmodel.frames[i].name + "_frictionCone", frictionCone, 1e1
             )
+
         if swingFootTask is not None:
             for i in swingFootTask:
                 frameTranslationResidual = crocoddyl.ResidualModelFrameTranslation(
@@ -298,105 +301,17 @@ class QuadrupedalWalkingProblem:
             self.state, self.actuation, contactModel, costModel, 0.0, True
         )
         model = crocoddyl.IntegratedActionModelEuler(dmodel, timeStep)
+
         return model
 
-    def createFootSwitchModel(self, supportFootIds, swingFootTask, pseudoImpulse=False):
+    def createFootSwitchModel(self, supportFootIds, swingFootTask):
         """Action model for a foot switch phase.
 
         :param supportFootIds: Ids of the constrained feet
         :param swingFootTask: swinging foot task
-        :param pseudoImpulse: true for pseudo-impulse models, otherwise it uses the impulse model
         :return action model for a foot switch phase
         """
-        if pseudoImpulse:
-            return self.createPseudoImpulseModel(supportFootIds, swingFootTask)
-        else:
-            return self.createImpulseModel(supportFootIds, swingFootTask)
-
-    def createPseudoImpulseModel(self, supportFootIds, swingFootTask):
-        """Action model for pseudo-impulse models.
-
-        A pseudo-impulse model consists of adding high-penalty cost for the contact velocities.
-        :param supportFootIds: Ids of the constrained feet
-        :param swingFootTask: swinging foot task
-        :return pseudo-impulse differential action model
-        """
-        # Creating a 3D multi-contact model, and then including the supporting
-        # foot
-        nu = self.actuation.nu
-        contactModel = crocoddyl.ContactModelMultiple(self.state, nu)
-        for i in supportFootIds:
-            supportContactModel = crocoddyl.ContactModel3D(
-                self.state, i, np.array([0.0, 0.0, 0.0]), nu, np.array([0.0, 50.0])
-            )
-            contactModel.addContact(
-                self.rmodel.frames[i].name + "_contact", supportContactModel
-            )
-
-        # Creating the cost model for a contact phase
-        costModel = crocoddyl.CostModelSum(self.state, nu)
-        for i in supportFootIds:
-            cone = crocoddyl.FrictionCone(self.Rsurf, self.mu, 4, False)
-            coneResidual = crocoddyl.ResidualModelContactFrictionCone(
-                self.state, i, cone, nu
-            )
-            coneActivation = crocoddyl.ActivationModelQuadraticBarrier(
-                crocoddyl.ActivationBounds(cone.lb, cone.ub)
-            )
-            frictionCone = crocoddyl.CostModelResidual(
-                self.state, coneActivation, coneResidual
-            )
-            costModel.addCost(
-                self.rmodel.frames[i].name + "_frictionCone", frictionCone, 1e1
-            )
-        if swingFootTask is not None:
-            for i in swingFootTask:
-                frameTranslationResidual = crocoddyl.ResidualModelFrameTranslation(
-                    self.state, i[0], i[1].translation, nu
-                )
-                frameVelocityResidual = crocoddyl.ResidualModelFrameVelocity(
-                    self.state, i[0], pinocchio.Motion.Zero(), pinocchio.LOCAL, nu
-                )
-                footTrack = crocoddyl.CostModelResidual(
-                    self.state, frameTranslationResidual
-                )
-                impulseFootVelCost = crocoddyl.CostModelResidual(
-                    self.state, frameVelocityResidual
-                )
-                costModel.addCost(
-                    self.rmodel.frames[i[0]].name + "_footTrack", footTrack, 1e7
-                )
-                costModel.addCost(
-                    self.rmodel.frames[i[0]].name + "_impulseVel",
-                    impulseFootVelCost,
-                    1e6,
-                )
-
-        stateWeights = np.array(
-            [0.0] * 3
-            + [500.0] * 3
-            + [0.01] * (self.rmodel.nv - 6)
-            + [10.0] * self.rmodel.nv
-        )
-        stateResidual = crocoddyl.ResidualModelState(
-            self.state, self.rmodel.defaultState, nu
-        )
-        stateActivation = crocoddyl.ActivationModelWeightedQuad(stateWeights**2)
-        ctrlResidual = crocoddyl.ResidualModelControl(self.state, nu)
-        stateReg = crocoddyl.CostModelResidual(
-            self.state, stateActivation, stateResidual
-        )
-        ctrlReg = crocoddyl.CostModelResidual(self.state, ctrlResidual)
-        costModel.addCost("stateReg", stateReg, 1e1)
-        costModel.addCost("ctrlReg", ctrlReg, 1e-3)
-
-        # Creating the action model for the KKT dynamics with simpletic Euler
-        # integration scheme
-        dmodel = crocoddyl.DifferentialActionModelContactFwdDynamics(
-            self.state, self.actuation, contactModel, costModel, 0.0, True
-        )
-        model = crocoddyl.IntegratedActionModelEuler(dmodel, 0.0)
-        return model
+        return self.createImpulseModel(supportFootIds, swingFootTask)
 
     def createImpulseModel(
         self, supportFootIds, swingFootTask, JMinvJt_damping=1e-12, r_coeff=0.0
@@ -449,4 +364,5 @@ class QuadrupedalWalkingProblem:
         )
         model.JMinvJt_damping = JMinvJt_damping
         model.r_coeff = r_coeff
+
         return model

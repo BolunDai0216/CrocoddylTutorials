@@ -220,3 +220,14 @@ coneResidual = crocoddyl.ResidualModelContactFrictionCone(multiBodyState, contac
 coneActivation = crocoddyl.ActivationModelQuadraticBarrier(crocoddyl.ActivationBounds(cone.lb, cone.ub))
 frictionCone = crocoddyl.CostModelResidual(multiBodyState, coneActivation, coneResidual)
 ```
+
+## Walking Problem
+
+The walking problem consists of three parts: double support, swing leg phase, and impact. These correspond to three different problem formulations. The double support part is the same as the standing problem, thus, it is not discussed in this section. 
+
+### Swing Leg Phase
+
+The overall structure of the swing leg phase problem is the same as the standing problem, with two additional objectives: tracking the swing foot motion and center of mass (CoM) motion. The planned motions are:
+
+![Walking Motion Plan](imgs/walkingmotion.png | width=300)
+
